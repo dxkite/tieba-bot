@@ -241,6 +241,7 @@ class TiebaBot:
             'thread_rules': self.thread_rules,
             'exclude_rules': self.exclude_rules,
             'black_list': self.black_list,
+            'black_list_options': self.black_list_options,
             'white_list': self.white_list,
         })
 
@@ -252,10 +253,17 @@ class TiebaBot:
         for thread_rule in self.thread_rules:
             rule = self.check_rules(thread_rule['include'], content)
             if rule is not None:
-                catch = rule
+                catch = {
+                    'rule': rule,
+                    'options': thread_rule['options']
+                }
                 result = BREAK_RULE
-                if thread_rule['exclude'] is not None and self.check_rules(thread_rule['exclude'], content) is not None:
-                    result = EXCLUDE_RULE
+                if thread_rule['exclude'] is not None:
+                    if thread_rule['exclude'] == '@exclude_rules':
+                        if self.check_rules(self.exclude_rules, content) is not None:
+                            result = EXCLUDE_RULE
+                    elif self.check_rules(thread_rule['exclude'], content) is not None:
+                        result = EXCLUDE_RULE
             break
 
         if catch is None and self.check_rules(self.exclude_rules, content) is not None:
@@ -287,7 +295,8 @@ class TiebaBot:
                 'title': thread['title'],
                 'content': thread['content'],
                 'link': thread['link'],
-                'rule': {
+                'match': {
+                    'rule': 'black_list',
                     'options': self.black_list_options
                 }
             }
@@ -303,7 +312,7 @@ class TiebaBot:
                 'title': thread['title'],
                 'content': thread['content'],
                 'link': thread['link'],
-                'rule': rule_t
+                'match': rule_t
             }
         if rule_c is not None:
             return {
@@ -312,7 +321,7 @@ class TiebaBot:
                 'title': thread['title'],
                 'content': thread['content'],
                 'link': thread['link'],
-                'rule': rule_c
+                'match': rule_c
             }
         return None
 
@@ -346,10 +355,10 @@ class TiebaBot:
         for item in break_list:
             current += 1
             link = item['link']
-            options = item['rule']['options']
+            options = item['match']['options']
             text = str(current) + '/' + str(total)
             if 'black' in options:
-                self.black_list.append(item['author_name'])
+                self.black_list.append(item['user'])
             if 'ban' in options:
                 print(text, 'ban', item)
                 opt.ban_floor_user(link, 1, 1)

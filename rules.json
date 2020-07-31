@@ -1,6 +1,9 @@
 {
     "black_list": [],
-    "black_list_options": ["ban", "delete"],
+    "black_list_options": [
+        "ban",
+        "delete"
+    ],
     "exclude_rules": [
         {
             "ignore_case": true,
@@ -11,6 +14,10 @@
                 "include",
                 "处理器",
                 "代码",
+                "源码",
+                "编译",
+                "安卓",
+                "g++",
                 "编译器",
                 "/\\w+\\.h/"
             ],
@@ -19,22 +26,7 @@
     ],
     "thread_rules": [
         {
-            "exclude": [
-                {
-                    "ignore_case": true,
-                    "keywords": [
-                        "c4droid",
-                        "头文件",
-                        "gcc",
-                        "include",
-                        "处理器",
-                        "代码",
-                        "编译器",
-                        "/\\w+\\.h/"
-                    ],
-                    "logic": "or"
-                }
-            ],
+            "exclude": "@exclude_rules",
             "include": [
                 {
                     "ignore_case": true,
@@ -74,7 +66,6 @@
                     "keywords": [
                         "小白基地",
                         "建模学习",
-                        "c4d",
                         "企鹅号",
                         "炫云"
                     ],
@@ -119,6 +110,28 @@
                         ]
                     ],
                     "logic": "and"
+                },
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        "c4d"
+                    ],
+                    "logic": "or"
+                }
+            ],
+            "options": [
+                "delete"
+            ]
+        },
+        {
+            "exclude": "@exclude_rules",
+            "include": [
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        "c4d"
+                    ],
+                    "logic": "or"
                 }
             ],
             "options": [
