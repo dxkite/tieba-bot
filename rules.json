@@ -1,0 +1,132 @@
+{
+    "black_list": [],
+    "black_list_options": ["ban", "delete"],
+    "exclude_rules": [
+        {
+            "ignore_case": true,
+            "keywords": [
+                "c4droid",
+                "头文件",
+                "gcc",
+                "include",
+                "处理器",
+                "代码",
+                "编译器",
+                "/\\w+\\.h/"
+            ],
+            "logic": "or"
+        }
+    ],
+    "thread_rules": [
+        {
+            "exclude": [
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        "c4droid",
+                        "头文件",
+                        "gcc",
+                        "include",
+                        "处理器",
+                        "代码",
+                        "编译器",
+                        "/\\w+\\.h/"
+                    ],
+                    "logic": "or"
+                }
+            ],
+            "include": [
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        [
+                            "PS",
+                            "AI",
+                            "AE",
+                            "C4D",
+                            "影视",
+                            "后期",
+                            "特效",
+                            "模型"
+                        ],
+                        [
+                            "怎么",
+                            "请问",
+                            "资源",
+                            "教程",
+                            "资料",
+                            "学",
+                            "师傅"
+                        ]
+                    ],
+                    "logic": "and"
+                },
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        "充值",
+                        "优惠"
+                    ],
+                    "logic": "and"
+                },
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        "小白基地",
+                        "建模学习",
+                        "c4d",
+                        "企鹅号",
+                        "炫云"
+                    ],
+                    "logic": "or"
+                }
+            ],
+            "options": [
+                "ban",
+                "delete",
+                "black"
+            ]
+        },
+        {
+            "exclude": null,
+            "include": [
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        "出",
+                        "源码"
+                    ],
+                    "logic": "and"
+                }
+            ],
+            "options": [
+                "ban",
+                "delete"
+            ]
+        },
+        {
+            "exclude": null,
+            "include": [
+                {
+                    "ignore_case": true,
+                    "keywords": [
+                        [
+                            "帮忙",
+                            "求助"
+                        ],
+                        [
+                            "作业"
+                        ]
+                    ],
+                    "logic": "and"
+                }
+            ],
+            "options": [
+                "delete"
+            ]
+        }
+    ],
+    "white_list": [
+        "DXKite"
+    ]
+}
