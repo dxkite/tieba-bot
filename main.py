@@ -359,6 +359,7 @@ class TiebaBot:
             text = str(current) + '/' + str(total)
             if 'black' in options:
                 self.black_list.append(item['user'])
+                self.save_config()
             if 'ban' in options:
                 print(text, 'ban', item)
                 opt.ban_floor_user(link, 1, 1)
