@@ -1,5 +1,7 @@
 {
-    "black_list": [],
+    "black_list": [
+        "/.*小白资源网.*/"
+    ],
     "black_list_options": [
         "ban",
         "delete"
@@ -44,9 +46,9 @@
                         [
                             "怎么",
                             "请问",
-                            "资源",
-                            "教程",
-                            "资料",
+                            "/.*资源/",
+                            "/.*教程/",
+                            "/.*资料/",
                             "学",
                             "师傅"
                         ]
@@ -110,13 +112,6 @@
                         ]
                     ],
                     "logic": "and"
-                },
-                {
-                    "ignore_case": true,
-                    "keywords": [
-                        "c4d"
-                    ],
-                    "logic": "or"
                 }
             ],
             "options": [

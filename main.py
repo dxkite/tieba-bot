@@ -80,7 +80,15 @@ class TiebaOperator:
         """打开贴吧"""
         self.driver.get('https://tieba.baidu.com')
         self.load_cookies(cookie_file)
-        self.driver.get('https://tieba.baidu.com/f?kw=' + name + '&fr=index')
+        url = 'https://tieba.baidu.com/f?kw=' + name + '&fr=index'
+        print('open page', url)
+        self.driver.get(url)
+        if '安全验证' in self.driver.page_source:
+            print('safe check error')
+            exit()
+        # while True:
+            # pass
+        # print(self.driver.page_source)
         user = self.wait_login()
         print('login user', user)
         self.save_cookie(cookie_file)
@@ -302,7 +310,7 @@ class TiebaBot:
             }
         rule_t, result_t = self.check_content(thread['title'])
         rule_c, result_c = self.check_content(thread['content'])
-        # print(result_t, result_c)
+        print(result_t, result_c)
         if EXCLUDE_RULE in [result_c, result_t]:
             return None
         if rule_t is not None:
@@ -378,6 +386,7 @@ class TiebaBot:
         if lk > 2 and key.startswith('/') and key.endswith('/'):
             pattern = key[1:lk - 1]
             flag = re.IGNORECASE if ignore_case else 0
+            # print(pattern, text, re.match(pattern, text, flag))
             return re.match(pattern, text, flag)
         # 普通分词处理
         if ignore_case:
@@ -399,7 +408,7 @@ class TiebaBot:
                 if TiebaBot.check_rule_or(content, key, ignore_case):
                     bc += 1
             else:
-                if TiebaBot.find_in(content, key, ignore_case):
+                if TiebaBot.find_in(key, content, ignore_case):
                     bc += 1
         return bc == len(keywords)
 
@@ -416,6 +425,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # 数据操作
     chrome_options = webdriver.ChromeOptions()
+    # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--no-sandbox')
     driver = webdriver.Chrome(options=chrome_options, executable_path=args.web_driver)
     driver.maximize_window()
     tieba_bot = TiebaBot()
@@ -424,79 +435,16 @@ if __name__ == "__main__":
     operator.open_tieba(args.name, args.cookies)
     tieba_bot.process(operator, int(args.page))
 
-# GLOBAL_EXCEPT = [{
-#     'keywords': [
-#         'c4droid',
-#         '头文件',
-#         'gcc',
-#         'include',
-#         '处理器',
-#         '代码',
-#         '编译器',
-#         '/\\w+\\.h/',
-#     ],
-#     'logic': 'or',
-#     'ignore_case': True,
-# }]
-#
-# THREADS_RULES = [
-#     {
-#         'exclude': GLOBAL_EXCEPT,
-#         'include': [
-#             {
-#                 'keywords': [['PS', 'AI', 'AE', 'C4D', '影视', '后期', '特效', '模型'],
-#                              ['怎么', '请问', '资源', '教程', '资料', '学', '师傅']],
-#                 'logic': 'and',
-#                 'ignore_case': True,
-#             },
-#             {
-#                 'logic': 'and',
-#                 'ignore_case': True,
-#                 'keywords': ['充值', '优惠'],
-#             },
-#             {
-#                 'logic': 'or',
-#                 'ignore_case': True,
-#                 'keywords': ['小白基地', '建模学习', 'c4d', '企鹅号', '炫云'],
-#             }
-#         ],
-#         'options': ['ban', 'delete', 'black'],
-#     },
-#     {
-#         'include': [
-#             {
-#                 'logic': 'and',
-#                 'ignore_case': True,
-#                 'keywords': ['出', '源码'],
-#             },
-#         ],
-#         'exclude': None,
-#         'options': ['ban', 'delete'],
-#     },
-#     {
-#         'include': [
-#             {
-#                 'logic': 'and',
-#                 'ignore_case': True,
-#                 'keywords': [['帮忙', '求助'], ['作业']],
-#             },
-#         ],
-#         'exclude': None,
-#         'options': ['delete'],
-#     },
-# ]
-#
-# save_to_json('rules.json', {
-#     'thread_rules': THREADS_RULES,
-#     'exclude_rules': GLOBAL_EXCEPT,
-#     'black_list': [],
-#     'white_list': [],
-# })
-#
-# 测试匹配
+# # 测试匹配
 # if __name__ == "__main__":
 #     bot = TiebaBot()
 #     bot.load_config()
+#     print(bot.judge_thread({
+#         'author_name': '小白资源网',
+#         'title': '全新平面设计114G超经典视频教程 基础入门班+品牌进阶班+ C4D基',
+#         'content': '全新平面设计114G超经典视频教程 基础入门班+品牌进阶班+ C4D基础学习课程 设计师必学',
+#         'link': 'https://test'
+#     }))
 #     # 2
 #     print('C4D怎么使用tome.h头文件', bot.check_content('C4D怎么使用tome.h头文件'))
 #     # 1
