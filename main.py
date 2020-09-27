@@ -57,7 +57,8 @@ class TiebaOperator:
         while True:
             try:
                 # 获取加载成功的二维码
-                qrcode = self.driver.find_element_by_css_selector('.tang-pass-qrcode-img')
+                qrcode = self.driver.find_element_by_css_selector(
+                    '.tang-pass-qrcode-img')
                 src = qrcode.get_attribute('src')
                 if 'loading' in src:
                     continue
@@ -157,7 +158,13 @@ class TiebaOperator:
         """封禁用户"""
         print('ban_floor_user', link, floor, reason)
         # floor = wd.find_element_by_css_selector('.l_post.j_l_post')
-        self.driver.get(link)
+
+        current = None
+        while link != current:
+            print('open url', link, 'current', current)
+            self.driver.get(link)
+            current = self.driver.current_url
+
         # 翻页加载封禁按钮
         body = self.driver.find_element_by_xpath('//body')
 
@@ -177,7 +184,8 @@ class TiebaOperator:
         # 封禁第[floor]楼
         try:
             ban.click()
-            dialog = self.driver.find_element_by_css_selector('.uiDialogWrapper')
+            dialog = self.driver.find_element_by_css_selector(
+                '.uiDialogWrapper')
             reasons = dialog.find_elements_by_css_selector('.b_reason_item')
             reasons[reason - 1].click()
             dialog.find_element_by_css_selector('.b_id_btn').click()
@@ -207,7 +215,8 @@ class TiebaOperator:
             reply = self.driver.find_elements_by_css_selector('.core_reply')
             # 删除别人的楼层
             try:
-                btn = reply[index - 1].find_element_by_css_selector('.p_post_del')
+                btn = reply[index -
+                            1].find_element_by_css_selector('.p_post_del')
                 btn.click()
             except NoSuchElementException:
                 pass
@@ -218,7 +227,8 @@ class TiebaOperator:
     @staticmethod
     def get_floor_num(elem: WebElement):
         """获取楼层"""
-        floor_info = json.loads(elem.find_element_by_css_selector('.j_lzl_container').get_attribute('data-field'))
+        floor_info = json.loads(elem.find_element_by_css_selector(
+            '.j_lzl_container').get_attribute('data-field'))
         return floor_info['floor_num']
 
 
@@ -231,6 +241,8 @@ class TiebaBot:
     exclude_rules = []
     # Web驱动
     rule_path = None
+
+    break_list = []
 
     def load_config(self,
                     thread_rules_path='rules.json',
@@ -292,13 +304,18 @@ class TiebaBot:
 
     def judge_thread(self, thread: dict):
         """根据规则处理帖子"""
-        if self.check_rule_or(thread['author_name'], self.white_list):
-            print('white list', thread['author_name'])
+        user = thread['author_name']
+        if user is None or len(user) == 0:
+            user = str(thread['user_info']['id'])
+
+        print('thread from', user)
+        if self.check_rule_or(user, self.white_list):
+            print('white list', user)
             return None
-        if self.check_rule_or(thread['author_name'], self.black_list):
-            print('black list', thread['author_name'], thread['title'])
+        if self.check_rule_or(user, self.black_list):
+            print('black list', user, thread['title'])
             return {
-                'user': thread['author_name'],
+                'user': user,
                 'type': 'black_list',
                 'title': thread['title'],
                 'content': thread['content'],
@@ -310,7 +327,7 @@ class TiebaBot:
             }
         rule_t, result_t = self.check_content(thread['title'])
         rule_c, result_c = self.check_content(thread['content'])
-        print(result_t, result_c)
+        # print(result_t, result_c)
         if EXCLUDE_RULE in [result_c, result_t]:
             return None
         if rule_t is not None:
@@ -333,9 +350,19 @@ class TiebaBot:
             }
         return None
 
-    def process(self, opt: TiebaOperator, max_page):
-        """爬取处理帖子"""
-        break_list = []
+    def load_process_list(self):
+        try:
+            self.break_list = load_from_json('process-list.json')
+        except:
+            self.break_list = []
+
+    def save_process_list(self):
+        try:
+            return save_to_json('process-list.json', self.break_list)
+        except:
+            return []
+
+    def scan_list(self, opt: TiebaOperator, max_page):
         while True:
             page = opt.get_current_page()
             thread_list = opt.get_thread_list()
@@ -346,8 +373,9 @@ class TiebaBot:
                 if rule is not None:
                     print('thread', thread)
                     print('rule', rule)
-                    break_list.append(rule)
+                    self.break_list.append(rule)
                     self.save_config()
+                    self.save_process_list()
             if page >= max_page:
                 break
             try:
@@ -358,16 +386,25 @@ class TiebaBot:
             print('go_next_page', next_url)
             opt.driver.get(next_url)
 
-        total = len(break_list)
+    def process(self, opt: TiebaOperator, max_page):
+        """爬取处理帖子"""
+        self.load_process_list()
+
+        # 没有处理
+        if len(self.break_list) == 0:
+           self.scan_list(opt, max_page)
+
+        total = len(self.break_list)
         current = 0
-        for item in break_list:
+        for item in self.break_list:
             current += 1
             link = item['link']
             options = item['match']['options']
             text = str(current) + '/' + str(total)
             if 'black' in options:
-                self.black_list.append(item['user'])
-                self.save_config()
+                if item['user'] not in self.black_list:
+                    self.black_list.append(item['user'])
+                    self.save_config()
             if 'ban' in options:
                 print(text, 'ban', item)
                 opt.ban_floor_user(link, 1, 1)
@@ -416,18 +453,24 @@ class TiebaBot:
 if __name__ == "__main__":
     # 参数处理
     parser = argparse.ArgumentParser(description='Tieba Bot v1.0')
-    parser.add_argument('--name', dest='name', default='c4droid', help='scan tieba name')
+    parser.add_argument('--name', dest='name',
+                        default='c4droid', help='scan tieba name')
     parser.add_argument('--page', dest='page', default=1, help='scan pages')
-    parser.add_argument('--cookies', dest='cookies', default=COOKIE_FILE, help='cookies path')
-    parser.add_argument('--web-driver', dest='web_driver', default=WEB_DRIVER, help='used web driver path')
-    parser.add_argument('--rules', dest='rules', default='rules.json', help='tieba keyword rules')
-    parser.add_argument('--words', dest='words', default='words.txt', help='jieba words list')
+    parser.add_argument('--cookies', dest='cookies',
+                        default=COOKIE_FILE, help='cookies path')
+    parser.add_argument('--web-driver', dest='web_driver',
+                        default=WEB_DRIVER, help='used web driver path')
+    parser.add_argument('--rules', dest='rules',
+                        default='rules.json', help='tieba keyword rules')
+    parser.add_argument('--words', dest='words',
+                        default='words.txt', help='jieba words list')
     args = parser.parse_args()
     # 数据操作
     chrome_options = webdriver.ChromeOptions()
     # chrome_options.add_argument('--headless')
     # chrome_options.add_argument('--no-sandbox')
-    driver = webdriver.Chrome(options=chrome_options, executable_path=args.web_driver)
+    driver = webdriver.Chrome(options=chrome_options,
+                              executable_path=args.web_driver)
     driver.maximize_window()
     tieba_bot = TiebaBot()
     tieba_bot.load_config(args.rules, args.words)
