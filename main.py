@@ -152,7 +152,7 @@ class TiebaOperator:
 
     def delete_thread(self, link):
         """删除帖子"""
-        self.delete_floor(link, 1)
+        return self.delete_floor(link, 1)
 
     def ban_floor_user(self, link, floor, reason):
         """封禁用户"""
@@ -160,10 +160,15 @@ class TiebaOperator:
         # floor = wd.find_element_by_css_selector('.l_post.j_l_post')
 
         current = None
-        while link != current:
-            print('open url', link, 'current', current)
+        count = 0
+
+        while link != current or count > 5:
+            print('ban_floor_user::open', link, 'current', current, count)
             self.driver.get(link)
             current = self.driver.current_url
+        
+        if count == 5:
+            return False
 
         # 翻页加载封禁按钮
         body = self.driver.find_element_by_xpath('//body')
@@ -179,7 +184,7 @@ class TiebaOperator:
 
         if ban is None:
             print('find post ban error')
-            return
+            return False
 
         # 封禁第[floor]楼
         try:
@@ -192,11 +197,24 @@ class TiebaOperator:
         except NoSuchElementException as e:
             print('ban user error')
             print(e)
+            return False
+        return True
 
     def delete_floor(self, link, index):
         """删除楼层"""
         print('delete_floor', link, index)
-        self.driver.get(link)
+
+        current = None
+        count = 0
+
+        while link != current or count > 5:
+            print('delete_floor::open', link, 'current', current, count)
+            self.driver.get(link)
+            current = self.driver.current_url
+        
+        if count == 5:
+            return False
+
         # 翻页加载封禁按钮
         body = self.driver.find_element_by_xpath('//body')
         while True:
@@ -210,7 +228,10 @@ class TiebaOperator:
         if index == 1:
             # 删除1楼
             btn = self.driver.find_element_by_css_selector('.j_thread_delete')
-            btn.click()
+            try:
+                btn.click()
+            except NoSuchElementException:
+                return False
         else:
             reply = self.driver.find_elements_by_css_selector('.core_reply')
             # 删除别人的楼层
@@ -219,10 +240,14 @@ class TiebaOperator:
                             1].find_element_by_css_selector('.p_post_del')
                 btn.click()
             except NoSuchElementException:
-                pass
+                return False
         # 删除帖子
-        dialog = self.driver.find_element_by_css_selector('.dialogJ')
-        dialog.find_element_by_css_selector('input[value="确定"]').click()
+        try:
+            dialog = self.driver.find_element_by_css_selector('.dialogJ')
+            dialog.find_element_by_css_selector('input[value="确定"]').click()
+        except:
+            return False
+        return True
 
     @staticmethod
     def get_floor_num(elem: WebElement):
@@ -389,13 +414,14 @@ class TiebaBot:
     def process(self, opt: TiebaOperator, max_page):
         """爬取处理帖子"""
         self.load_process_list()
-
         # 没有处理
-        if len(self.break_list) == 0:
-           self.scan_list(opt, max_page)
+        if len(self.break_list) <= 0:
+            # 添加处理列表
+            self.scan_list(opt, max_page)
 
         total = len(self.break_list)
         current = 0
+        error_list = []
         for item in self.break_list:
             current += 1
             link = item['link']
@@ -407,11 +433,14 @@ class TiebaBot:
                     self.save_config()
             if 'ban' in options:
                 print(text, 'ban', item)
-                opt.ban_floor_user(link, 1, 1)
+                if not opt.ban_floor_user(link, 1, 1):
+                    error_list.append(item)
             if 'delete' in options:
                 print(text, 'delete', item)
-                opt.delete_thread(link)
-
+                if not opt.delete_thread(link):
+                    error_list.append(item)
+        self.break_list = error_list
+        self.save_process_list()
         time.sleep(1)
         opt.driver.quit()
 
