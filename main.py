@@ -11,6 +11,7 @@ import os
 import random
 import re
 import argparse
+import base64
 
 # 登陆cookie
 COOKIE_FILE = 'cookies.json'
@@ -479,6 +480,64 @@ class TiebaBot:
         return bc == len(keywords)
 
 
+# SCRIPT="""// ==UserScript==
+# // @name         disable webdriver checker
+# // @namespace    http://tampermonkey.net/
+# // @version      0.1
+# // @description  bypass webdriver checker
+# // @author       dxkite
+# // @match        http://127.0.0.1:8000/
+# // @run-at		 document-start
+# // ==/UserScript==
+
+# (function() {
+#     'use strict';
+#     // 改写`webdriver`
+#     console.log('set navigator.webdriver to false')
+#     Object.defineProperty(navigator, "webdriver", {
+#         get: () => {
+#             console.log('get navigator.webdriver false')
+#             return false
+#         },
+#     });
+#      console.log('set navigator.userAgent')
+#     let userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36'
+#     Object.defineProperty(navigator, "userAgent", {
+#         get: () => {
+#             console.log('get navigator.userAgent')
+#             return userAgent
+#         },
+#     });
+# })();"""
+
+
+# def importTampermonkey(driver):
+#     """导入Tampermonkey"""
+#     driver.get('chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils')
+#     elm = WebDriverWait(driver, 60) \
+#             .until(lambda d: d.find_element_by_css_selector('.section.hide'))
+#     driver.execute_script("arguments[0].setAttribute('class','section');", elm)
+#     text = driver.find_element_by_css_selector('.importta')
+#     text.send_keys(script_code(SCRIPT))
+#     elm.find_element_by_css_selector('[value=导入]').click()
+#     for win in driver.window_handles:
+#         driver.switch_to.window(win)
+#         if driver.title == '导入':
+#             break
+#     btn = WebDriverWait(driver, 60) \
+#             .until(lambda d: d.find_element_by_css_selector('[value=导入]'))
+#     btn.click()
+#     for win in driver.window_handles:
+#         driver.switch_to.window(win)
+#         break
+    
+
+# def script_code(code):
+#     tmp="""
+#     {"created_by":"Tampermonkey","version":"1","scripts":[{"name":"disable webdriver checker","options":{"check_for_updates":true,"comment":null,"compatopts_for_requires":true,"compat_wrappedjsobject":false,"compat_metadata":false,"compat_foreach":false,"compat_arrayleft":false,"compat_uW_gmonkey":false,"compat_forvarin":false,"noframes":null,"awareOfChrome":false,"run_at":null,"override":{"use_includes":[],"orig_includes":[],"merge_includes":true,"use_matches":[],"orig_matches":["*.baidu.com"],"merge_matches":true,"use_excludes":[],"orig_excludes":[],"merge_excludes":true,"use_connects":[],"merge_connects":true,"use_blockers":[],"orig_run_at":"document-start","orig_noframes":null,"orig_connects":[]}},"storage":{"ts":1602334807837,"data":{}},"enabled":true,"position":1,"uuid":"d22d5305-cd41-4e54-a331-9f5b4b8477e6","source":"__SOURCE__"}]}
+#     """
+#     return tmp.replace('__SOURCE__', str(base64.b64encode(code.encode('utf-8')), encoding='utf-8'))
+
 if __name__ == "__main__":
     # 参数处理
     parser = argparse.ArgumentParser(description='Tieba Bot v1.0')
@@ -496,7 +555,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # 数据操作
     chrome_options = webdriver.ChromeOptions()
+    # 油猴插件
+    # chrome_options.add_extension('./tampermonkey_4.10_0.crx')
     # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36')
+    # chrome_options.add_argument('--proxy-server=localhost:8888')
+    # chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
     # chrome_options.add_argument('--no-sandbox')
     driver = webdriver.Chrome(options=chrome_options,
                               executable_path=args.web_driver)
@@ -507,7 +571,7 @@ if __name__ == "__main__":
     operator.open_tieba(args.name, args.cookies)
     tieba_bot.process(operator, int(args.page))
 
-# # 测试匹配
+# 测试匹配
 # if __name__ == "__main__":
 #     bot = TiebaBot()
 #     bot.load_config()
@@ -538,7 +602,7 @@ if __name__ == "__main__":
 #     # None
 #     print(bot.judge_thread({
 #         'author_name': 'TTHHR',
-#         'title': 'C4D怎么使用头文件啊',
-#         'content': '我不会用啊',
+#         'title': '鹤岗市水下切割公司【专业致力于潜水】',
+#         'content': '潜水Tel：139-6198-9568；为您介绍水下打捞的工作流程：在水下打捞中，随机应变',
 #         'link': 'https://test'
 #     }))

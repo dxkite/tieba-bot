@@ -2,3 +2,5 @@ chromedriver.exe
 cookies.json
 .vscode/
 debug.log
+process-list.json
+tampermonkey_4.10_0.crx
