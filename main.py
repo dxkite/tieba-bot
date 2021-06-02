@@ -94,6 +94,7 @@ class TiebaOperator:
         user = self.wait_login()
         print('login user', user)
         self.save_cookie(cookie_file)
+        self.driver.get(url)
         return self
 
     def save_cookie(self, file):
