@@ -541,18 +541,18 @@ class TiebaBot:
 
 if __name__ == "__main__":
     # 参数处理
-    parser = argparse.ArgumentParser(description='Tieba Bot v1.0')
+    parser = argparse.ArgumentParser(description='贴吧机器人 v1.0')
     parser.add_argument('--name', dest='name',
-                        default='c4droid', help='scan tieba name')
-    parser.add_argument('--page', dest='page', default=1, help='scan pages')
+                        default='c4droid', help='贴吧名称')
+    parser.add_argument('--page', dest='page', default=1, help='机器人浏览的页数')
     parser.add_argument('--cookies', dest='cookies',
-                        default=COOKIE_FILE, help='cookies path')
+                        default=COOKIE_FILE, help='登录Cookie保存文件位置')
     parser.add_argument('--web-driver', dest='web_driver',
-                        default=WEB_DRIVER, help='used web driver path')
+                        default=WEB_DRIVER, help='ChromeDriver文件位置')
     parser.add_argument('--rules', dest='rules',
-                        default='rules.json', help='tieba keyword rules')
+                        default='rules.json', help='关键字检索规则')
     parser.add_argument('--words', dest='words',
-                        default='words.txt', help='jieba words list')
+                        default='words.txt', help='特殊分词规则文件')
     args = parser.parse_args()
     # 数据操作
     chrome_options = webdriver.ChromeOptions()

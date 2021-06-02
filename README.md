@@ -28,18 +28,17 @@ python main.py --page 2
 ## Usage
 
 ```
-usage: main.py [-h] [--name NAME] [--page PAGE] [--cookies COOKIES]
-               [--web-driver WEB_DRIVER] [--rules RULES] [--words WORDS]
+usage: main.py [-h] [--name NAME] [--page PAGE] [--cookies COOKIES] [--web-driver WEB_DRIVER] [--rules RULES] [--words WORDS]
 
-Tieba Bot v1.0
+贴吧机器人 v1.0
 
 optional arguments:
   -h, --help            show this help message and exit
-  --name NAME           scan tieba name
-  --page PAGE           scan pages
-  --cookies COOKIES     cookies path
+  --name NAME           贴吧名称
+  --page PAGE           机器人浏览的页数
+  --cookies COOKIES     登录Cookie保存文件位置
   --web-driver WEB_DRIVER
-                        used web driver path
-  --rules RULES         tieba keyword rules
-  --words WORDS         jieba words list
+                        ChromeDriver文件位置
+  --rules RULES         关键字检索规则
+  --words WORDS         特殊分词规则文件
 ```
